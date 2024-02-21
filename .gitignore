@@ -1,3 +1,6 @@
+# ignoring files in auto_version_increment
+auto_version_increment/*.exe
+
 # ignoring files in ecs
 ecs/*.exe
 ecs/*.obj
