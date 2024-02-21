@@ -1,0 +1,3 @@
+# ignoring files in ecs
+ecs/*.exe
+ecs/*.obj
