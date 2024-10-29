@@ -129,8 +129,44 @@ int main()
 		return 1;
 	}
 
-	closesocket(listenSocket);
 	freeaddrinfo(result);
+
+
+	/*
+		Listening on a socket
+	*/
+
+	// the listen function places a socket in a state in which it is listening for an incoming connection
+	if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
+		printf("Listen failed with error: %ld\n", WSAGetLastError());
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+
+	/*
+		Accepting a connection	
+	*/
+	SOCKET clientSocket = INVALID_SOCKET;
+
+	// Accept a client socket
+	clientSocket = accept(listenSocket, NULL, NULL);
+
+	if (clientSocket == INVALID_SOCKET) {
+		printf("accept failed: %d\n", WSAGetLastError());
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	// pass this client socket to a worker thread or an I/O completion port and continue accepting additional connections
+
+	/*
+		Cleaning and Finishing
+	*/
+
+	closesocket(listenSocket);
 
 	// The WSACleanup function terminates use of the Winsock 2 DLL (Ws2_32.dll)
 	ret = WSACleanup();
