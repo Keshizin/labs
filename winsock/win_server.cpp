@@ -31,6 +31,7 @@
 // #pragma comment(lib, "Ws2_32.lib")
 
 #define DEFAULT_PORT "27015"
+#define DEFAULT_BUFFFER_SIZE 512
 
 int main()
 {
@@ -39,9 +40,7 @@ int main()
 	/*
 		INITIALIZING WINDOWS SOCKET DLL
 
-		All processes (applications or DLLs) that call Winsock functions must initialize
-		the use of the Windows Sockets DLL before making other Winsock functions calls.
-		This also makes certain that Winsock is supported on the system.
+		All processes (applications or DLLs) that call Winsock functions must initialize the use of the Windows Sockets DLL before making other Winsock functions calls. This also makes certain that Winsock is supported on the system.
 	*/
 
 	// The WSADATA structure contains information about the Windows Sockets implementation.
@@ -104,7 +103,7 @@ int main()
 
 	SOCKET listenSocket = INVALID_SOCKET;
 
-	// The socket function creates a socket that is bound to a specific transport service provider.
+	// Creates a socket that is bound to a specific transport service provider.
 	listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
 	if (listenSocket == INVALID_SOCKET) {
@@ -136,6 +135,8 @@ int main()
 		Listening on a socket
 	*/
 
+	std::cout << "> Listening on a socket..." << std::endl;
+
 	// the listen function places a socket in a state in which it is listening for an incoming connection
 	if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
 		printf("Listen failed with error: %ld\n", WSAGetLastError());
@@ -143,7 +144,6 @@ int main()
 		WSACleanup();
 		return 1;
 	}
-
 
 	/*
 		Accepting a connection	
@@ -160,7 +160,52 @@ int main()
 		return 1;
 	}
 
+	std::cout << "> Connection accpeted!" << std::endl;
+
 	// pass this client socket to a worker thread or an I/O completion port and continue accepting additional connections
+
+	/*
+		Sending and Receiving packets
+	*/
+
+	char recvBuffer[DEFAULT_BUFFFER_SIZE];
+
+	int recvResult, sendResult;
+
+	do {
+		// receives data from a connected socket or a bound connectionless socket
+		recvResult = recv(clientSocket, recvBuffer, DEFAULT_BUFFFER_SIZE, 0);
+
+		if (recvResult > 0) {
+			std::cout << "> bytes received: " << recvResult << std::endl;
+
+			sendResult = send(clientSocket, recvBuffer, recvResult, 0);
+			
+			if (sendResult == SOCKET_ERROR) {
+				std::cout << "> send failed: " << WSAGetLastError() << std::endl;
+				closesocket(clientSocket);
+				WSACleanup();
+				return 1;
+			}
+
+			std::cout << "> bytes sent: " << sendResult << std::endl;
+		}
+
+		if (recvResult == 0) {
+			std::cout << "> the connection was closed!" << std::endl;
+		}
+
+		if (recvResult < 0) {
+			std::cout << "> recv failed: " << WSAGetLastError() << std::endl;
+			closesocket(listenSocket);
+			WSACleanup();
+			return 1;
+		}
+
+	} while (recvResult > 0);
+
+	// To cease transmitting or receiving before closing, use the shutdown function :
+	//shutdown(listenSocket, 0); // SD_SEND ou SD_RECEIVE ou SD_BOTH
 
 	/*
 		Cleaning and Finishing
