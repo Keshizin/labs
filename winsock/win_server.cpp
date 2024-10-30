@@ -179,6 +179,7 @@ int main()
 		if (recvResult > 0) {
 			std::cout << "> bytes received: " << recvResult << std::endl;
 
+			// sends data on a connected socket
 			sendResult = send(clientSocket, recvBuffer, recvResult, 0);
 			
 			if (sendResult == SOCKET_ERROR) {
@@ -204,8 +205,18 @@ int main()
 
 	} while (recvResult > 0);
 
-	// To cease transmitting or receiving before closing, use the shutdown function :
-	//shutdown(listenSocket, 0); // SD_SEND ou SD_RECEIVE ou SD_BOTH
+	/*
+		Disconnecting and shutdown a socket
+	*/
+
+	ret = shutdown(listenSocket, SD_BOTH); // SD_SEND ou SD_RECEIVE ou SD_BOTH
+
+	if (ret == SOCKET_ERROR) {
+		std::cout << "> shutdown failed: " << WSAGetLastError() << std::endl;
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
 
 	/*
 		Cleaning and Finishing
