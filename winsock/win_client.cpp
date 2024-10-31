@@ -85,7 +85,7 @@ int main()
 	hints.ai_socktype = SOCK_STREAM; // TCP
 	hints.ai_protocol = IPPROTO_TCP; // TCP
 
-	std::string serverIP = "127.0.0.0";
+	std::string serverIP = "localhost";
 
 	ret = getaddrinfo(serverIP.c_str(), DEFAULT_PORT, &hints, &result);
 
