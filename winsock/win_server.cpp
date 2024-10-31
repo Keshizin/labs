@@ -17,18 +17,12 @@
 	  document for TCP/IP that includes newer functions and structures used to retrieve IP addresses.
 */
 
-
 #include <iostream>
-
-//#ifndef WIN32_LEAN_AND_MEAN
-//#define WIN32_LEAN_AND_MEAN
-//#endif
-//#include <windows.h>
 
 #include <WinSock2.h>
 #include <ws2tcpip.h>
 
-// #pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Ws2_32.lib")
 
 #define DEFAULT_PORT "27015"
 #define DEFAULT_BUFFFER_SIZE 512
@@ -45,7 +39,7 @@ int main()
 
 	// The WSADATA structure contains information about the Windows Sockets implementation.
 	WSADATA wsaData;
-	
+
 	// The WSAStartup function initiates use of the Winsock DLL by a process.
 	int ret = WSAStartup(MAKEWORD(2, 2), &wsaData);
 
@@ -76,7 +70,7 @@ int main()
 			- SOCK_SEQPACKET
 	*/
 
-	
+
 
 	struct addrinfo* result = NULL;
 	struct addrinfo hints;
@@ -146,7 +140,7 @@ int main()
 	}
 
 	/*
-		Accepting a connection	
+		Accepting a connection
 	*/
 	SOCKET clientSocket = INVALID_SOCKET;
 
@@ -179,9 +173,14 @@ int main()
 		if (recvResult > 0) {
 			std::cout << "> bytes received: " << recvResult << std::endl;
 
+			std::string msg(recvBuffer, recvResult);
+
+			std::cout << "> message: " << msg << std::endl;
+
 			// sends data on a connected socket
-			sendResult = send(clientSocket, recvBuffer, recvResult, 0);
-			
+			std::string serverMsg = "HAIL! Server greetings";
+			sendResult = send(clientSocket, serverMsg.c_str(), serverMsg.length(), 0);
+
 			if (sendResult == SOCKET_ERROR) {
 				std::cout << "> send failed: " << WSAGetLastError() << std::endl;
 				closesocket(clientSocket);
@@ -209,7 +208,7 @@ int main()
 		Disconnecting and shutdown a socket
 	*/
 
-	ret = shutdown(listenSocket, SD_BOTH); // SD_SEND ou SD_RECEIVE ou SD_BOTH
+	ret = shutdown(listenSocket, SD_SEND); // SD_SEND ou SD_RECEIVE ou SD_BOTH
 
 	if (ret == SOCKET_ERROR) {
 		std::cout << "> shutdown failed: " << WSAGetLastError() << std::endl;

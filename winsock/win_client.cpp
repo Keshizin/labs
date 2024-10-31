@@ -165,8 +165,11 @@ int main()
 	do {
 		ret = recv(connectSocket, recvBuffer, DEFAULT_BUFFFER_SIZE, 0);
 
-		if (ret > 0)
+		if (ret > 0) {
 			std::cout << "> bytes received: " << ret << std::endl;
+			std::string recvMsg(recvBuffer, ret);
+			std::cout << "> bytes received: " << recvMsg << std::endl;
+		}
 
 		else if (ret == 0)
 			std::cout << "> The connection was closed: " << ret << std::endl;
